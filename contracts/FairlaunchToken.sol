@@ -10,9 +10,10 @@ contract FairlaunchToken is ERC20, GasPriceController, DexListing {
     constructor(
         string memory name_,
         string memory symbol_,
-        address pairedCurrency_
+        uint listingDuration_
     )
         ERC20(name_, symbol_)
+        DexListing(listingDuration_)
     {
     }
 

@@ -18,13 +18,16 @@ contract DexListing is OriginOwner {
     address immutable public busdPair;
 
     uint private _listingFeePercent = 0;
-    uint private _listingDuration = 100 seconds;
+    uint private _listingDuration;
     uint private _listingStartAt;
 
     bool internal _listingFinished;
 
-    constructor()
+    constructor(
+        uint listingDuration_
+    )
     {
+        _listingDuration = listingDuration_;
         address router = address(0x10ED43C718714eb63d5aA57B78B54704E256024E);
         uniswapV2Router = router;
 
@@ -104,5 +107,13 @@ contract DexListing is OriginOwner {
                 return amount_ * _listingFeePercent / 100;
             }
         }
+    }
+
+    function listingDuration()
+        public
+        view
+        returns(uint)
+    {
+        return _listingDuration;
     }
 }
