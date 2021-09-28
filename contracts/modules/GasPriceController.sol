@@ -2,12 +2,10 @@
 
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-
 /*
     frontrun prevent
 */
-contract GasPriceController is Ownable {
+contract GasPriceController {
     event SetMaxGasPrice(
         uint maxGasPrice
     );
@@ -30,15 +28,6 @@ contract GasPriceController is Ownable {
         require(maxGasPrice_ >= MIN_GASPRICE, "GasPriceController: too low");
         _maxGasPrice = maxGasPrice_;
         emit SetMaxGasPrice(maxGasPrice_);
-    }
-
-    function setMaxGasPrice(
-        uint maxGasPrice_
-    )
-        external
-        onlyOwner
-    {
-        _setMaxGasPrice(maxGasPrice_);
     }
 
     function maxGasPrice()

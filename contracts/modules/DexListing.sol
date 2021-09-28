@@ -4,14 +4,9 @@ pragma solidity ^0.8.0;
 
 import "./OriginOwner.sol";
 
-import "../interfaces/IUniswapV2Router02.sol";
-import "../interfaces/IUniswapV2Factory.sol";
+import "../lib/LDex.sol";
 
 contract DexListing is OriginOwner {
-    bytes4 private constant FACTORY_SELECTOR = bytes4(keccak256(bytes('factory()')));
-
-    address constant private _wbnb = address(0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c);
-    address constant private _busd = address(0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56);
 
     address immutable public uniswapV2Router;
     address immutable public wbnbPair;
@@ -31,10 +26,8 @@ contract DexListing is OriginOwner {
         address router = address(0x10ED43C718714eb63d5aA57B78B54704E256024E);
         uniswapV2Router = router;
 
-        wbnbPair = IUniswapV2Factory(IUniswapV2Router02(router).factory())
-            .createPair(address(this), _wbnb);
-        busdPair = IUniswapV2Factory(IUniswapV2Router02(router).factory())
-            .createPair(address(this), _busd);
+        wbnbPair = LDex._createPair(router, LDex._wbnb);
+        busdPair = LDex._createPair(router, LDex._busd);
     }
 
     function _startListing()
@@ -67,18 +60,6 @@ contract DexListing is OriginOwner {
         }
     }
 
-    function _isPair(
-        address pair_
-    )
-        internal
-        returns(bool)
-    {
-
-        (bool success, bytes memory data) = 
-            pair_.call((abi.encodeWithSelector(FACTORY_SELECTOR)));
-        return success && data.length > 0;
-    }
-
     function _updateAndGetListingFee(
         address sender_,
         address recipient_,
@@ -89,7 +70,7 @@ contract DexListing is OriginOwner {
     {
         if (_listingStartAt == 0) {
             // first addLiquidity
-            if (_isPair(recipient_) && amount_ > 0) {
+            if (LDex._isPair(recipient_) && amount_ > 0) {
                 _startListing();
             }
             return 0;
@@ -99,7 +80,7 @@ contract DexListing is OriginOwner {
                 _finishListing();
             }
 
-            if (!_isPair(sender_) && !_isPair(recipient_)) {
+            if (!LDex._isPair(sender_) && !LDex._isPair(recipient_)) {
                 // normal transfer
                 return 0;
             } else {

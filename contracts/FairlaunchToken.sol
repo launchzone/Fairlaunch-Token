@@ -3,10 +3,13 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+
 import "./modules/GasPriceController.sol";
 import "./modules/DexListing.sol";
+import "./modules/TransferFee.sol";
 
-contract FairlaunchToken is ERC20, GasPriceController, DexListing {
+contract FairlaunchToken is ERC20, GasPriceController, DexListing, TransferFee, Ownable {
     constructor(
         string memory name_,
         string memory symbol_,
@@ -35,7 +38,36 @@ contract FairlaunchToken is ERC20, GasPriceController, DexListing {
             }
             super._transfer(sender_, recipient_, transferA);
         } else {
-            super._transfer(sender_, recipient_, amount_);
+            uint transferFee = _getTransferFee(sender_, recipient_, amount_);
+            require(transferFee <= amount_, "transferFee too high");
+            uint transferA = amount_ - transferFee;
+            super._transfer(sender_, _getTransferFeeTo(), transferFee);
+            super._transfer(sender_, recipient_, transferA);
         }
-    }    
+    }
+
+    /*
+        Settings
+    */
+
+    function setMaxGasPrice(
+        uint maxGasPrice_
+    )
+        external
+        onlyOwner
+    {
+        _setMaxGasPrice(maxGasPrice_);
+    }
+
+    function setTransferFee(
+        address to_,
+        uint buyFee_,
+        uint sellFee_,
+        uint normalFee_
+    )
+        external
+        onlyOwner
+    {
+        _setTransferFee(to_, buyFee_, sellFee_, normalFee_);
+    }
 }
