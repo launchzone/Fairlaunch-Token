@@ -67,7 +67,7 @@ contract TransferFee {
     }
 
     function transferFee()
-        internal
+        public
         view
         returns(STransferFee memory)
     {
