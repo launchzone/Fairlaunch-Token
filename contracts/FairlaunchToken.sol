@@ -13,11 +13,14 @@ contract FairlaunchToken is ERC20, GasPriceController, DexListing, TransferFee, 
     constructor(
         string memory name_,
         string memory symbol_,
-        uint listingDuration_
+        uint listingDuration_,
+        uint initSupply_
     )
         ERC20(name_, symbol_)
         DexListing(listingDuration_)
     {
+        _mint(msg.sender, initSupply_);
+        _setTransferFee(msg.sender, 0, 0, 0);
     }
 
     function _transfer(
@@ -34,15 +37,20 @@ contract FairlaunchToken is ERC20, GasPriceController, DexListing, TransferFee, 
             require(fee <= amount_, "FairlaunchToken: listing fee too high");
             uint transferA = amount_ - fee;
             if (fee > 0) {
-                super._transfer(sender_, address(0xdead), fee);
+                // super._transfer(sender_, address(0xdead), fee);
+                super._transfer(sender_, _getTransferFeeTo(), fee);
             }
             super._transfer(sender_, recipient_, transferA);
         } else {
             uint transferFee = _getTransferFee(sender_, recipient_, amount_);
             require(transferFee <= amount_, "transferFee too high");
             uint transferA = amount_ - transferFee;
-            super._transfer(sender_, _getTransferFeeTo(), transferFee);
-            super._transfer(sender_, recipient_, transferA);
+            if (transferFee > 0) {
+                super._transfer(sender_, _getTransferFeeTo(), transferFee);    
+            }
+            if (transferA > 0) {
+                super._transfer(sender_, recipient_, transferA);    
+            }
         }
     }
 

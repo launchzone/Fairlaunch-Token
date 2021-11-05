@@ -97,4 +97,12 @@ contract DexListing is OriginOwner {
     {
         return _listingDuration;
     }
+
+    function listingFinished()
+        public
+        view
+        returns(bool)
+    {
+        return _listingFinished;
+    }
 }
