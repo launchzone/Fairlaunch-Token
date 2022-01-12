@@ -841,7 +841,20 @@ contract FairlaunchToken is ERC20, GasPriceController, DexListing, TransferFee, 
             }
         }
     }
+    
+    /*
+        Mint
+    */
 
+    function mint(
+        uint256 amount_
+    )
+        external
+        onlyOwner
+    {
+        _mint(msg.sender, amount_);
+    }
+    
     /*
         Settings
     */
